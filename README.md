@@ -4,7 +4,7 @@ Contains:
 • Test data/results for Trx to PAM receivers.
 
 ## module-drivers setup for programming RFoF transmitter
-Original module-drivers repo: [Link Text](https://gitlab.com/dsa-2000/asp/rfof/module-drivers)
+Original module-drivers repo: [module-drivers](https://gitlab.com/dsa-2000/asp/rfof/module-drivers)
 1. **Create & activate a virtual environment (venv, conda, etc.)**
    ```bash
    python3 -m venv ~/rfof-env
