@@ -1,7 +1,7 @@
 ## RFoF_module
 
 #### module-drivers setup for programming RFoF transmitter.
-#### module-drivers was forked from: [module-drivers](https://gitlab.com/dsa-2000/asp/rfof/module-drivers)
+#### module-drivers was forked from Kiran Shila's repo found here: [module-drivers](https://gitlab.com/dsa-2000/asp/rfof/module-drivers)
 #### Changes to module-drivers include: linux-embedded-hal support, added Frx/Ftx classes for Rpi i2c.
 
 1. **Create & activate a virtual environment (venv, conda, etc.)**
