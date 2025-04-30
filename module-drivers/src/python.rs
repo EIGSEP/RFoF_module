@@ -303,7 +303,7 @@ impl FtxPi {
             SharedLinuxI2CDevice::new(&bus),
         );
 
-        // 4) Initialize
+        // 4. Initialize
         inner
             .init()
             .map_err(|_| PyRuntimeError::new_err("I2C Error initializing Ftx"))?;
@@ -312,7 +312,6 @@ impl FtxPi {
     }
 
     /// The same exact methods as the Ftx class
-
     /// Get the board temperature in deg C
     pub fn get_temp(&mut self) -> PyResult<f32> {
         self.0

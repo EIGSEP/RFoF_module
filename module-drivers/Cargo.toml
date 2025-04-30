@@ -26,6 +26,7 @@ embedded-hal-bus = { version = "0.2", optional = true }
 [dev-dependencies]
 embedded-hal-bus = { version = "0.2" }
 ftdi-embedded-hal = { version = "0.22", features = ["libftd2xx-static"] }
+linux-embedded-hal = "0.4.0" 
 
 [features]
 default = ["std"]
