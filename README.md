@@ -51,58 +51,58 @@
     ```
 6. Navigate to ~/module-drivers/src/ then add linux-embedded-hal and the following code blocks to python.rs
    #### From line 18 add:
-   ```rust
-    // ------ Adding support for native Rpi i2c using linux-embedded-hal -------
+```rust
+ // ------ Adding support for native Rpi i2c using linux-embedded-hal -------
 
-    use linux_embedded_hal::{I2cdev};
+ use linux_embedded_hal::{I2cdev};
 
-    type SharedLinuxI2C = Arc<Mutex<I2cdev>>;
+ type SharedLinuxI2C = Arc<Mutex<I2cdev>>;
 
-    struct SharedLinuxI2CDevice(SharedLinuxI2C);
+ struct SharedLinuxI2CDevice(SharedLinuxI2C);
 
-    impl SharedLinuxI2CDevice {
-        fn new(bus: &SharedLinuxI2C) -> Self {
-            Self(Arc::clone(bus))
-        }
-    }
+ impl SharedLinuxI2CDevice {
+     fn new(bus: &SharedLinuxI2C) -> Self {
+         Self(Arc::clone(bus))
+     }
+ }
 
-    impl embedded_hal::i2c::ErrorType for SharedLinuxI2CDevice {
-        type Error = <I2cdev as embedded_hal::i2c::ErrorType>::Error;
-    }
+ impl embedded_hal::i2c::ErrorType for SharedLinuxI2CDevice {
+     type Error = <I2cdev as embedded_hal::i2c::ErrorType>::Error;
+ }
 
-    impl I2cTrait for SharedLinuxI2CDevice {
-        fn read(&mut self, address: u8, bytes: &mut [u8]) -> Result<(), Self::Error> {
-            let mut guard = self.0.lock().unwrap();
-            guard.read(address, bytes)
-        }
+ impl I2cTrait for SharedLinuxI2CDevice {
+     fn read(&mut self, address: u8, bytes: &mut [u8]) -> Result<(), Self::Error> {
+         let mut guard = self.0.lock().unwrap();
+         guard.read(address, bytes)
+     }
 
-        fn write(&mut self, address: u8, bytes: &[u8]) -> Result<(), Self::Error> {
-            let mut guard = self.0.lock().unwrap();
-            guard.write(address, bytes)
-        }
+     fn write(&mut self, address: u8, bytes: &[u8]) -> Result<(), Self::Error> {
+         let mut guard = self.0.lock().unwrap();
+         guard.write(address, bytes)
+     }
 
-        fn write_read(
-            &mut self,
-            address: u8,
-            write: &[u8],
-            read: &mut [u8],
-        ) -> Result<(), Self::Error> {
-            let mut guard = self.0.lock().unwrap();
-            guard.write_read(address, write, read)
-        }
+     fn write_read(
+         &mut self,
+         address: u8,
+         write: &[u8],
+         read: &mut [u8],
+     ) -> Result<(), Self::Error> {
+         let mut guard = self.0.lock().unwrap();
+         guard.write_read(address, write, read)
+     }
 
-        fn transaction(
-            &mut self,
-            address: u8,
-            operations: &mut [embedded_hal::i2c::Operation<'_>],
-        ) -> Result<(), Self::Error> {
-            let mut guard = self.0.lock().unwrap();
-            guard.transaction(address, operations)
-        }
-    }
+     fn transaction(
+         &mut self,
+         address: u8,
+         operations: &mut [embedded_hal::i2c::Operation<'_>],
+     ) -> Result<(), Self::Error> {
+         let mut guard = self.0.lock().unwrap();
+         guard.transaction(address, operations)
+     }
+ }
 
-    // ------------------------------------------
-   ```
+// ------------------------------------------
+```
 
 7. Add FtxPi class to python.rs from line 281:
    
