@@ -15,6 +15,57 @@ use pyo3::{
 };
 use std::sync::{Arc, Mutex};
 
+// ------ Adding support for native Rpi i2c using linux-embedded-hal -------
+
+use linux_embedded_hal::{I2cdev};
+
+type SharedLinuxI2C = Arc<Mutex<I2cdev>>;
+
+struct SharedLinuxI2CDevice(SharedLinuxI2C);
+
+impl SharedLinuxI2CDevice {
+    fn new(bus: &SharedLinuxI2C) -> Self {
+        Self(Arc::clone(bus))
+    }
+}
+
+impl embedded_hal::i2c::ErrorType for SharedLinuxI2CDevice {
+    type Error = <I2cdev as embedded_hal::i2c::ErrorType>::Error;
+}
+
+impl I2cTrait for SharedLinuxI2CDevice {
+    fn read(&mut self, address: u8, bytes: &mut [u8]) -> Result<(), Self::Error> {
+        let mut guard = self.0.lock().unwrap();
+        guard.read(address, bytes)
+    }
+
+    fn write(&mut self, address: u8, bytes: &[u8]) -> Result<(), Self::Error> {
+        let mut guard = self.0.lock().unwrap();
+        guard.write(address, bytes)
+    }
+
+    fn write_read(
+        &mut self,
+        address: u8,
+        write: &[u8],
+        read: &mut [u8],
+    ) -> Result<(), Self::Error> {
+        let mut guard = self.0.lock().unwrap();
+        guard.write_read(address, write, read)
+    }
+
+    fn transaction(
+        &mut self,
+        address: u8,
+        operations: &mut [embedded_hal::i2c::Operation<'_>],
+    ) -> Result<(), Self::Error> {
+        let mut guard = self.0.lock().unwrap();
+        guard.transaction(address, operations)
+    }
+}
+
+// ---------------------- end, 03/14/2025 --------------------
+
 type SharedFTDIDevice = Arc<Mutex<I2c<Ft4232ha>>>;
 
 struct SharedDeivce(SharedFTDIDevice);
@@ -63,55 +114,6 @@ impl I2cTrait for SharedDeivce {
         bus.transaction(address, operations)
     }
 }
-
-// ------ Adding support for native Rpi i2c using linux-embedded-hal -------
-use linux_embedded_hal::{I2cdev};
-
-type SharedLinuxI2C = Arc<Mutex<I2cdev>>;
-
-struct SharedLinuxI2CDevice(SharedLinuxI2C);
-
-impl SharedLinuxI2CDevice {
-    fn new(bus: &SharedLinuxI2C) -> Self {
-        Self(Arc::clone(bus))
-    }
-}
-
-impl embedded_hal::i2c::ErrorType for SharedLinuxI2CDevice {
-    type Error = <I2cdev as embedded_hal::i2c::ErrorType>::Error;
-}
-
-impl I2cTrait for SharedLinuxI2CDevice {
-    fn read(&mut self, address: u8, bytes: &mut [u8]) -> Result<(), Self::Error> {
-        let mut guard = self.0.lock().unwrap();
-        guard.read(address, bytes)
-    }
-
-    fn write(&mut self, address: u8, bytes: &[u8]) -> Result<(), Self::Error> {
-        let mut guard = self.0.lock().unwrap();
-        guard.write(address, bytes)
-    }
-
-    fn write_read(
-        &mut self,
-        address: u8,
-        write: &[u8],
-        read: &mut [u8],
-    ) -> Result<(), Self::Error> {
-        let mut guard = self.0.lock().unwrap();
-        guard.write_read(address, write, read)
-    }
-
-    fn transaction(
-        &mut self,
-        address: u8,
-        operations: &mut [embedded_hal::i2c::Operation<'_>],
-    ) -> Result<(), Self::Error> {
-        let mut guard = self.0.lock().unwrap();
-        guard.transaction(address, operations)
-    }
-}
-// ------------------------------------------
 
 #[pyfunction]
 /// List available FTDI devices
@@ -276,8 +278,6 @@ impl Ftx {
     }
 }
 
-
-
 // ----------- Adding Support for Rpi, Ftx class --------
 #[pyclass]
 struct FtxPi(InnerFtx<SharedLinuxI2CDevice>);
@@ -303,7 +303,7 @@ impl FtxPi {
             SharedLinuxI2CDevice::new(&bus),
         );
 
-        // 4. Initialize
+        // 4) Initialize
         inner
             .init()
             .map_err(|_| PyRuntimeError::new_err("I2C Error initializing Ftx"))?;
@@ -312,6 +312,7 @@ impl FtxPi {
     }
 
     /// The same exact methods as the Ftx class
+
     /// Get the board temperature in deg C
     pub fn get_temp(&mut self) -> PyResult<f32> {
         self.0
@@ -427,7 +428,8 @@ impl FtxPi {
     }
 }
 
-// -----------------------------------------------------
+
+// ----------------------------- end, 03/14/2025 -------------------------
 
 #[pyclass]
 struct Frx(InnerFrx<SharedDeivce>);
@@ -525,7 +527,6 @@ impl Frx {
     }
 }
 
-
 // ---------------------- Adding Support for Rpi, FrxPi Class ------------
 #[pyclass]
 struct FrxPi(InnerFrx<SharedLinuxI2CDevice>);
@@ -610,15 +611,23 @@ impl FrxPi {
         }
     }
 }
-// ------------------------------------------------
+
+// ---------------------- end, 03/14/2025 ----------------------------
+
+
+
+
+
 
 #[pymodule]
 pub fn rfof(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_function(wrap_pyfunction!(list_devices, module)?)?;
     module.add_class::<Ftx>()?;
     module.add_class::<Frx>()?;
-    // added new Rpi-based classes 
+
+    // added new Rpi-based classes ------ 03/14/2025
     module.add_class::<FtxPi>()?;
     module.add_class::<FrxPi>()?;
+
     Ok(())
 }

@@ -22,11 +22,11 @@ ftdi-embedded-hal = { version = "0.22", features = [
     "libftd2xx-static",
 ], optional = true }
 embedded-hal-bus = { version = "0.2", optional = true }
+linux-embedded-hal = "0.4.0"
 
 [dev-dependencies]
 embedded-hal-bus = { version = "0.2" }
 ftdi-embedded-hal = { version = "0.22", features = ["libftd2xx-static"] }
-linux-embedded-hal = "0.4.0" 
 
 [features]
 default = ["std"]
@@ -38,3 +38,4 @@ python = [
     "dep:ftdi-embedded-hal",
     "dep:embedded-hal-bus",
 ]
+
