@@ -1,0 +1,41 @@
+[package]
+name = "rfof"
+version = "0.0.9"
+edition = "2021"
+
+[lib]
+name = "rfof"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+embedded-hal = "1"
+packed_struct = { version = "0.10", default-features = false }
+
+# Python deps
+pyo3 = { version = "0.22", features = [
+    "extension-module",
+    "abi3-py38",
+    "generate-import-lib",
+], optional = true }
+thiserror = { version = "1", optional = true }
+ftdi-embedded-hal = { version = "0.22", features = [
+    "libftd2xx-static",
+], optional = true }
+embedded-hal-bus = { version = "0.2", optional = true }
+linux-embedded-hal = "0.4.0"
+
+[dev-dependencies]
+embedded-hal-bus = { version = "0.2" }
+ftdi-embedded-hal = { version = "0.22", features = ["libftd2xx-static"] }
+
+[features]
+default = ["std"]
+std = []
+python = [
+    "std",
+    "dep:pyo3",
+    "dep:thiserror",
+    "dep:ftdi-embedded-hal",
+    "dep:embedded-hal-bus",
+]
+

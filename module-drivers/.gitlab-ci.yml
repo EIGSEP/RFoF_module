@@ -1,0 +1,46 @@
+image: rustlang/rust:nightly-bookworm
+
+variables:
+  MATURIN_REPOSITORY_URL: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
+  MATURIN_USERNAME: gitlab-ci-token
+  MATURIN_PASSWORD: ${CI_JOB_TOKEN}
+  CARGO_HOME: ${CI_PROJECT_DIR}/.cargo
+
+cache:
+  paths:
+    - .cargo/
+    - target/
+  policy: pull-push
+  key: ${CI_COMMIT_REF_SLUG} # Share cache between all jobs on one branch/tag
+
+rustdoc:
+  script:
+    - cargo doc --no-deps
+    - mkdir -p public
+    - mv target/doc public/doc
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
+
+linux:
+  image: "quay.io/pypa/manylinux2014_x86_64"
+  variables:
+    PYBIN: "/opt/python/cp38-cp38/bin" # We're buiding for >3.8 compat
+  script:
+    - curl --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain nightly
+    - source ${CARGO_HOME}/env
+    - ${PYBIN}/pip install maturin
+    - ${PYBIN}/maturin publish --compatibility manylinux2014 --skip-existing
+
+windows:
+  variables:
+    XWIN_VERSION: 16
+  script:
+    - apt-get update
+    - apt-get install -y mingw-w64 pipx
+    - pipx install maturin
+    - rustup target add x86_64-pc-windows-msvc
+    - rustup component add llvm-tools-preview
+    - ~/.local/bin/maturin publish --target x86_64-pc-windows-msvc --skip-existing
