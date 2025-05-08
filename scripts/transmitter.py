@@ -1,12 +1,11 @@
 import argparse
 import sys
+from rfof import FtxPi
 
-try:
-    from rfof import FtxPi
-except ImportError:
-    print("Error: Could not import transmitter control module.")
-    sys.exit(1)
-
+"""
+CLI tool for controlling EIGSEP Ftx module.
+example usage: python3 transmitter.py --atten 15.0 --read_temp
+"""
 DEFAULT_I2C_DEV = "/dev/i2c-1"
 
 def main():
@@ -39,43 +38,29 @@ def main():
     )
     # Future parameters can be added here, e.g.,
     # parser.add_argument("--freq", type=float, help="Frequency in MHz") - though we'd use different params...
-    # look in python.rs in module-drivers/src/ for additional methods within FtxPi class.
+    # look in python.rs in module-drivers/src/ path for additional methods within FtxPi class.
 
     args = parser.parse_args()
 
-    # Initialize the transmitter
-    try:
-        tx = FtxPi(args.device)
-    except Exception as e:
-        print(f"Failed to initialize transmitter: {e}")
-        sys.exit(1)
+    tx = FtxPi(args.device) # init
 
     # Set attenuation MAX ATTENUATION 31.5 dB
     if args.atten is not None:
-        try:
-            tx.set_atten(args.atten)
-            print(f"Successfully set attenuation to {args.atten} dB")
-        except Exception as e:
-            print(f"Error setting attenuation: {e}")
-            sys.exit(1)
+        tx.set_atten(args.atten)
+        print(f"Set attenuation to {args.atten} dB")
+
 
     # Grab temp in C˚
     if args.read_temp:
-        try:
-            temp = tx.get_temp()
-            print(f"Transmitter Temp: {temp:.2f} C˚")
-        except Exception as e:
-            print(f"Failed to read temperature: {e}")
-            sys.exit(1)
+        temp = tx.get_temp()
+        print(f"Transmitter Temp: {temp:.2f} C˚")
+
 
     # Readout attenuation of Ftx board (dB).
     if args.read_atten:
-        try:
-            atten = tx.get_atten()
-            print(f"attenuation: {atten} dB.")
-        except Exception as e:
-            print(f"Failed to read Ftx attenuation. {e}")
-            sys.exit(1)
+        atten = tx.get_atten()
+        print(f"Attenuation: {atten} dB")
+
     
 
 if __name__ == "__main__":
